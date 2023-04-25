@@ -64,7 +64,7 @@ ros2 launch haya_imu_ros2 haya_imu_demo_launch.py
 
 ![alt text](https://github.com/soarbear/haya_imu_ros2/blob/main/image/demo_fusion.jpg)
 
-## 2.6 Topicsの確認
+## 2.6 Topic、tfの確認
 
 - imu_data(Message: haya_imu_msgs/msg/ImuData), 通常出力モード、キャリブレーションモード用 
 
