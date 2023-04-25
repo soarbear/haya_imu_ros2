@@ -1,4 +1,97 @@
 # haya_imu_ros2
-ROS2(humble) Package for 9-axis IMU/AHRS haya_imu v3. With ODR Mode, DEMO Mode, Calibration Mode, simultaneous output (Max1000Hz) of 6-axis rotation quaternion, 9-axis rotation quaternion, 3-axis Euler angle. 
 
-coming soon...
+# 0. はじめに
+
+haya_imu_ros2は、9軸IMU/AHRS haya_imu v3の専用ROS2パッケージです。主なフィーチャとして、通常出力モード、デモンストレーションモード、キャリブレーションモード、6軸回転クォータニオン、9軸回転クォータニオン、オイラー角を同時にパブリッシュ(Max1000Hz Best Effort)することと、RVIZにてのデモンストレーションが可能となります。ROSパッケージはリポジトリhaya_imu_rosとして公開しています。
+
+# 1. 対向環境
+
+- Ubuntu 22.04 / ROS2 humble 推奨
+
+# 2. 使用手順
+
+## 2.1 haya_imu_ros2のインストール
+
+$cd ~/ros2_ws/src
+
+$git clone https://github.com/soarbear/haya_imu_msgs.git
+
+$git clone https://github.com/soarbear/haya_imu_ros2.git
+
+$cd ~/ros2_ws
+
+$colcon build --packages-select haya_imu_msgs haya_imu_ros2
+
+## 2.2 USBでの接続
+
+haya_imuを対向装置へUSBで接続できた場合、赤LEDが常時点灯することを確認できます。
+
+## 2.3 デバイス名の固定
+
+$chmod +x ~/ros2_ws/src/haya_imu_ros2/script/create_rules.sh
+
+$~/ros2_ws/src/haya_imu_ros2/script/create_rules.sh
+
+$sudo udevadm control --reload-rules && udevadm trigger
+
+- また、固定したデバイス名を解除する場合、
+
+$chmod +x ~/ros2_ws/src/haya_imu_ros2/script/delete_rules.sh
+
+$~/ros2_ws/src/haya_imu_ros2/script/delete_rules.sh
+
+$sudo udevadm control --reload-rules && udevadm trigger
+
+## 2.4 パラメータの確認
+
+params.yamlに載ってあるパラメータの値を確認して、目的、必要に応じて変更してください。
+
+## 2.5 ROS2 LAUNCH
+
+- 通常出力モード、キャリブレーションモードの場合、
+
+$source ~/ros2_ws/install/setup.bash
+
+$ros2 launch haya_imu_ros2 haya_imu_launch.py
+
+- デモンストレーションモードの場合、
+
+$source ~/ros2_ws/install/setup.bash
+
+ros2 launch haya_imu_ros2 haya_imu_demo_launch.py
+
+![alt text](https://github.com/soarbear/haya_imu_ros2/blob/main/image/demo_fusion.jpg)
+
+## 2.6 Topicsの確認
+
+- imu_data(Message: haya_imu_msgs/msg/ImuData), 通常出力モード、キャリブレーションモード用 
+
+- tf(Message: geometry_msgs/msg/TransformStamped), デモンストレーションモード用
+
+- Topicのデータを確認する例
+
+$source ~/ros2_ws/install/setup.bash
+
+$ros2 launch haya_imu_ros2 haya_topic_echo_launch.py
+
+もしくは、$ros2 topic echo /imu_data
+
+- Topicの出力レートを確認する例
+
+$source ~/ros2_ws/install/setup.bash
+
+$ros2 launch haya_imu_ros2 haya_topic_hz_launch.py
+
+もしくは、$ros2 topic hz -w 1000 /imu_data
+
+## 2.7 キャリブレーション
+
+ここでは内容を省きますが、商品マニュアル参照してください
+
+# 3. リリース
+
+- v3.2 April 2023 新規リリース
+
+# 4. ライセンス
+
+- 本ROSパッケージ(haya_imu_ros2)に対して、BSD-3-Clauseが適用されます。
