@@ -26,7 +26,9 @@ $colcon build --packages-select haya_imu_msgs haya_imu_ros2
 
 haya_imuを対向装置へUSBで接続できた場合、赤LEDが常時点灯することを確認できます。
 
-## 2.3 デバイス名の固定
+## 2.3 USBシリアルポート番号の固定
+
+- 以下ルールの作成によって、ttyACM_hayaに固定します。
 
 $chmod +x ~/ros2_ws/src/haya_imu_ros2/script/create_rules.sh
 
@@ -34,7 +36,7 @@ $~/ros2_ws/src/haya_imu_ros2/script/create_rules.sh
 
 $sudo udevadm control --reload-rules && udevadm trigger
 
-- また、固定したデバイス名を解除する場合、
+- また、以下ルールの削除によって、固定したUSBシリアルポート番号を解除します。
 
 $chmod +x ~/ros2_ws/src/haya_imu_ros2/script/delete_rules.sh
 
@@ -48,13 +50,13 @@ params.yamlに載ってあるパラメータの値を確認して、目的、必
 
 ## 2.5 ROS2 LAUNCH
 
-- 通常出力モード、キャリブレーションモードの場合、
+- 通常出力モード、キャリブレーションモードの場合
 
 $source ~/ros2_ws/install/setup.bash
 
 $ros2 launch haya_imu_ros2 haya_imu_launch.py
 
-- デモンストレーションモードの場合、
+- デモンストレーションモードの場合
 
 $source ~/ros2_ws/install/setup.bash
 
@@ -86,7 +88,31 @@ $ros2 launch haya_imu_ros2 haya_topic_hz_launch.py
 
 ## 2.7 キャリブレーション
 
-ここでは内容を省きますが、商品マニュアル参照してください
+製品マニュアルを参照してください。
+
+## 2.8 (オプション)DDSの切り替え
+
+以下の手順より、Fast DDS(デフォルト)をCyclone DDS(例)あるいは他のDDSへ切り替えます。
+
+- Fast DDS(デフォルト) → Cyclone DDS
+
+$export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+$printenv RMW_IMPLEMENTATION
+
+$source ~/ros2_ws/install/setup.bash
+
+$ros2 launch haya_imu_ros2 haya_imu_launch.py
+
+- Cyclone DDS → Fast DDS(デフォルト)
+
+$export -n RMW_IMPLEMENTATION
+
+$printenv RMW_IMPLEMENTATION
+
+$source ~/ros2_ws/install/setup.bash
+
+$ros2 launch haya_imu_ros2 haya_imu_launch.py
 
 # 3. リリース
 
