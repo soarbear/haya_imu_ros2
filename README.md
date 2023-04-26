@@ -66,9 +66,11 @@ ros2 launch haya_imu_ros2 haya_imu_demo_launch.py
 
 ## 2.6 Topic、tfの確認
 
-- imu_data(Message: haya_imu_msgs/msg/ImuData), 通常出力モード、キャリブレーションモード用 
+- メッセージのタイプ
 
-- tf(Message: geometry_msgs/msg/TransformStamped), デモンストレーションモード用
+imu_data(Message: haya_imu_msgs/msg/ImuData), 通常出力モード、キャリブレーションモード用 
+
+tf(Message: geometry_msgs/msg/TransformStamped), デモンストレーションモード用
 
 - Topicのデータを確認する例
 
