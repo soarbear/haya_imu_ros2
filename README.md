@@ -1,5 +1,7 @@
 # haya_imu_ros2
 
+![alt text](https://github.com/soarbear/haya_imu_ros2/blob/main/image/haya_imu(icm-42688+mmc5983ma.jpg "icm-42688+mmc5983ma=9軸センサー")
+
 # 0. はじめに
 
 haya_imu_ros2は、9軸IMU/AHRS haya_imu v3の専用ROS2パッケージです。haya_imuはCortex-M4、ICM-42688、MMC5983MAを搭載しています。主なフィーチャとして、通常出力モード、デモンストレーションモード、キャリブレーションモード、6軸回転ベクトルクォータニオン、9軸回転ベクトルクォータニオン、オイラー角を同時にパブリッシュ(Max1000Hz Best Effort)することと、RVIZにてのデモンストレーションが可能となります。ROSパッケージはリポジトリhaya_imu_rosとして公開しています。
