@@ -1,6 +1,6 @@
 # haya_imu_ros2
 
-![alt text](https://github.com/soarbear/haya_imu_ros2/blob/main/image/haya_imu(icm-42688+mmc5983ma.jpg "icm-42688+mmc5983ma=9軸センサー")
+<img src="https://github.com/soarbear/haya_imu_ros2/blob/main/image/haya_imu(icm-42688+mmc5983ma).jpg" alt="icm-42688+mmc5983ma=9軸センサー" title="icm-42688+mmc5983ma=9軸センサー" />
 
 # 0. はじめに
 
@@ -64,7 +64,7 @@ $source ~/ros2_ws/install/setup.bash
 
 ros2 launch haya_imu_ros2 haya_imu_demo_launch.py
 
-![alt text](https://github.com/soarbear/haya_imu_ros2/blob/main/image/demo_fusion.jpg)
+<img src="https://github.com/soarbear/haya_imu_ros2/blob/main/image/demo_fusion.jpg" alt="9軸IMU=icm-42688+mmc5983maデータシュージョンデモ" title="9軸IMU=icm-42688+mmc5983maデータシュージョンデモ" />
 
 ## 2.6 Topic、tfの確認
 
