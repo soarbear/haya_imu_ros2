@@ -8,7 +8,7 @@ haya_imu_ros2は、9軸IMU/AHRS haya_imu v3の専用ROS2パッケージです。
 
 # 1. 対向環境
 
-- Ubuntu 22.04 / ROS2 humble 推奨
+- Ubuntu 24.04 22.04 / ROS2 jazzy humble 推奨
 
 # 2. 使用手順
 
