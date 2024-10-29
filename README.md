@@ -6,6 +6,8 @@
 
 haya_imu_ros2は、9軸IMU/AHRS haya_imu v3の専用ROS2パッケージです。haya_imuはCortex-M4、ICM-42688、MMC5983MAを搭載しています。主なフィーチャとして、通常出力モード、デモンストレーションモード、キャリブレーションモード、6軸回転ベクトルクォータニオン、9軸回転ベクトルクォータニオン、オイラー角を同時にパブリッシュ(Max1000Hz Best Effort)することと、RVIZにてのデモンストレーションが可能となります。ROSパッケージはリポジトリhaya_imu_rosとして公開しています。
 
+[2024/10/29] お客先要望により、パブリッシュメッセージタイプは従来の[haya_imu_msgs::msg::ImuData]の他に、[sensor_msgs::msg::Imu]を新規追加済み。また、params.yamlのパラメータである、message_typeにより切り替わます。
+
 # 1. 対向環境
 
 - Ubuntu 24.04 22.04 / ROS2 jazzy humble 推奨
@@ -62,7 +64,7 @@ $ros2 launch haya_imu_ros2 haya_imu_launch.py
 
 $source ~/ros2_ws/install/setup.bash
 
-ros2 launch haya_imu_ros2 haya_imu_demo_launch.py
+$ros2 launch haya_imu_ros2 haya_imu_demo_launch.py
 
 <img src="https://github.com/soarbear/haya_imu_ros2/blob/main/image/demo_fusion.jpg" alt="9軸IMU=icm-42688+mmc5983maデータシュージョンデモ" title="9軸IMU=icm-42688+mmc5983maデータシュージョンデモ" />
 
@@ -119,6 +121,7 @@ $source ~/ros2_ws/install/setup.bash
 $ros2 launch haya_imu_ros2 haya_imu_launch.py
 
 # 3. リリース
+- v3.4 October 2024 mainブランチとしてリリース
 
 - v3.2 April 2023 新規リリース
 

@@ -21,4 +21,11 @@
 # - When customer receives haya_imu, please set it to calibration mode once, 
 #   calibrate it according to the manual. Then set it to normal output mode ex. 500, 250... etc.
 # - Do not support numbers or alphabets other than the above, ex. 800, a.
-    imu_mode: 250
+    imu_mode: 100
+
+# publish message type, added on 2024/10/25 
+# haya (haya_imu_msgs::msg::ImuData, haya_imu customized message type in normal output mode, default)
+# ros2 (sensor_msgs::msg::Imu, ros2 standard message type normal output mode)
+# - ATTENTION:
+# - message_type should be haya while calibration mode is set(imu_mode: 10).
+    message_type: ros2

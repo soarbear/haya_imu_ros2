@@ -42,12 +42,14 @@ HayaImuNode::HayaImuNode() : Node("haya_imu_node") {
     declare_parameter("imu_topic", "/imu_data");
     declare_parameter("imu_frame", "imu_link");
     declare_parameter("imu_mode", 500);
+    declare_parameter("message_type", "haya");
 
     // Get parameters from config file, otherwise takes default value
     port_name_ = get_parameter("serial_port_name").as_string();
     imu_topic_ = get_parameter("imu_topic").as_string();
     imu_frame_ = get_parameter("imu_frame").as_string();
     imu_mode_ = static_cast <int16_t>(get_parameter("imu_mode").as_int());
+    message_type_ = get_parameter("message_type").as_string();
 
     // Set topic for publishing
     if (imu_mode_ == DEMONSTRATION_MODE) { // Demo mode
@@ -57,13 +59,20 @@ HayaImuNode::HayaImuNode() : Node("haya_imu_node") {
         rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
         qos_profile.depth = 1;
         auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, qos_profile.depth), qos_profile);
-        publish_imu_ = this->create_publisher<haya_imu_msgs::msg::ImuData>(imu_topic_, qos);
+        if(message_type_ == "haya") {// haya_imu message type
+            publish_imu_ = this->create_publisher<haya_imu_msgs::msg::ImuData>(imu_topic_, qos);
+        }
+        else {// ros2 message type
+            publish_imu_ros2_ = this->create_publisher<sensor_msgs::msg::Imu>(imu_topic_, qos);
+        }
     }
     // Covariance matrix
     for (int32_t i; i < sizeof(angular_velocity_covariance_) / sizeof(double); i++) {
         imu_msg_.angular_velocity_covariance[i] = angular_velocity_covariance_[i];
         imu_msg_.linear_acceleration_covariance[i] = linear_acceleration_covariance_[i];
         imu_msg_.magnetic_field_covariance[i] = magnetic_field_covariance_[i];
+        imu_msg_ros2_.angular_velocity_covariance[i] = angular_velocity_covariance_[i];
+        imu_msg_ros2_.linear_acceleration_covariance[i] = linear_acceleration_covariance_[i];
     }
 
     // Create CRC table
@@ -195,59 +204,89 @@ void HayaImuNode::PublishImuMsg() {
     }
     else { // ODR mode or Calibration mode
 
-        // Message header
-        imu_msg_.header.stamp = this->get_clock()->now();
-        //imu_msg_.header.stamp = rclcpp::Clock().now();
-        imu_msg_.header.frame_id = imu_frame_;
+        if(message_type_ == "haya") {// haya_imu message type
+            // Message header
+            imu_msg_.header.stamp = this->get_clock()->now();
+            //imu_msg_.header.stamp = rclcpp::Clock().now();
+            imu_msg_.header.frame_id = imu_frame_;
 
-        // Angular velocity
-        imu_msg_.angular_velocity.x = imu_data_.angular_velocity[0];
-        imu_msg_.angular_velocity.y = imu_data_.angular_velocity[1];
-        imu_msg_.angular_velocity.z = imu_data_.angular_velocity[2];
+            // Angular velocity
+            imu_msg_.angular_velocity.x = imu_data_.angular_velocity[0];
+            imu_msg_.angular_velocity.y = imu_data_.angular_velocity[1];
+            imu_msg_.angular_velocity.z = imu_data_.angular_velocity[2];
 
-        // Linear acceleration
-        imu_msg_.linear_acceleration.x = imu_data_.linear_acceleration[0];
-        imu_msg_.linear_acceleration.y = imu_data_.linear_acceleration[1];
-        imu_msg_.linear_acceleration.z = imu_data_.linear_acceleration[2];
+            // Linear acceleration
+            imu_msg_.linear_acceleration.x = imu_data_.linear_acceleration[0];
+            imu_msg_.linear_acceleration.y = imu_data_.linear_acceleration[1];
+            imu_msg_.linear_acceleration.z = imu_data_.linear_acceleration[2];
 
-        // Magnetic field
-        imu_msg_.magnetic_field.x = imu_data_.magnetic_field[0];
-        imu_msg_.magnetic_field.y = imu_data_.magnetic_field[1];
-        imu_msg_.magnetic_field.z = imu_data_.magnetic_field[2];
+            // Magnetic field
+            imu_msg_.magnetic_field.x = imu_data_.magnetic_field[0];
+            imu_msg_.magnetic_field.y = imu_data_.magnetic_field[1];
+            imu_msg_.magnetic_field.z = imu_data_.magnetic_field[2];
 
-        // 6-axis fusion quaternion
-        imu_msg_.orientation[0].w = imu_data_.quaternion[0][0];
-        imu_msg_.orientation[0].x = imu_data_.quaternion[0][1];
-        imu_msg_.orientation[0].y = imu_data_.quaternion[0][2];
-        imu_msg_.orientation[0].z = imu_data_.quaternion[0][3];
+            // 6-axis fusion quaternion
+            imu_msg_.orientation[0].w = imu_data_.quaternion[0][0];
+            imu_msg_.orientation[0].x = imu_data_.quaternion[0][1];
+            imu_msg_.orientation[0].y = imu_data_.quaternion[0][2];
+            imu_msg_.orientation[0].z = imu_data_.quaternion[0][3];
 
-        // 9-axis fusion quaternion
-        imu_msg_.orientation[1].w = imu_data_.quaternion[1][0];
-        imu_msg_.orientation[1].x = imu_data_.quaternion[1][1];
-        imu_msg_.orientation[1].y = imu_data_.quaternion[1][2];
-        imu_msg_.orientation[1].z = imu_data_.quaternion[1][3];
+            // 9-axis fusion quaternion
+            imu_msg_.orientation[1].w = imu_data_.quaternion[1][0];
+            imu_msg_.orientation[1].x = imu_data_.quaternion[1][1];
+            imu_msg_.orientation[1].y = imu_data_.quaternion[1][2];
+            imu_msg_.orientation[1].z = imu_data_.quaternion[1][3];
 
-        // Combined calibration index, 0x00(worst) -> 0x3f(best)
-        imu_msg_.calibration_index = imu_data_.calibration_index;
+            // Combined calibration index, 0x00(worst) -> 0x3f(best)
+            imu_msg_.calibration_index = imu_data_.calibration_index;
 
-        // 6-axis imu temperature
-        imu_msg_.temperature_imu = imu_data_.temperature_imu;
+            // 6-axis imu temperature
+            imu_msg_.temperature_imu = imu_data_.temperature_imu;
 
-        // Get Euler angle, rotation sequence is Yaw -> Pitch -> Roll
-        GetEulerYPR(&imu_msg_);
+            // Get Euler angle, rotation sequence is Yaw -> Pitch -> Roll
+            GetEulerYPR(&imu_msg_);
 
-        // Publish imu topic
-        publish_imu_->publish(imu_msg_);
+            // Publish imu topic
+            publish_imu_->publish(imu_msg_);
 
-        // Release information on publishing fusion data once
-        RCLCPP_INFO_ONCE(this->get_logger(), "[Publ] Publishing Topic: %s (haya_imu_msgs::msg::ImuData) @ %dHz", imu_topic_.c_str(), imu_mode_); 
+            // Release information on publishing fusion data once
+            RCLCPP_INFO_ONCE(this->get_logger(), "[Publ] Publishing Topic: %s (haya_imu_msgs::msg::ImuData) @ %dHz", imu_topic_.c_str(), imu_mode_); 
+        }
+        else {// ros2 message type
+            // Message header
+            imu_msg_ros2_.header.stamp = this->get_clock()->now();
+            //imu_msg_.header.stamp = rclcpp::Clock().now();
+            imu_msg_ros2_.header.frame_id = imu_frame_;
+
+            // Angular velocity
+            imu_msg_ros2_.angular_velocity.x = imu_data_.angular_velocity[0];
+            imu_msg_ros2_.angular_velocity.y = imu_data_.angular_velocity[1];
+            imu_msg_ros2_.angular_velocity.z = imu_data_.angular_velocity[2];
+
+            // Linear acceleration
+            imu_msg_ros2_.linear_acceleration.x = imu_data_.linear_acceleration[0];
+            imu_msg_ros2_.linear_acceleration.y = imu_data_.linear_acceleration[1];
+            imu_msg_ros2_.linear_acceleration.z = imu_data_.linear_acceleration[2];
+
+            // 9-axis fusion quaternion
+            imu_msg_ros2_.orientation.w = imu_data_.quaternion[1][0];
+            imu_msg_ros2_.orientation.x = imu_data_.quaternion[1][1];
+            imu_msg_ros2_.orientation.y = imu_data_.quaternion[1][2];
+            imu_msg_ros2_.orientation.z = imu_data_.quaternion[1][3];
+
+            // Publish imu topic
+            publish_imu_ros2_->publish(imu_msg_ros2_);
+
+            // Release information on publishing fusion data once
+            RCLCPP_INFO_ONCE(this->get_logger(), "[Publ] Publishing Topic: %s (sensor_msgs::msg::Imu) @ %dHz", imu_topic_.c_str(), imu_mode_);            
+        }
     }
 }
 
 /*
  * GetEulerYPR() Get Euler angle, refer to manual for more information
  */
-void HayaImuNode::GetEulerYPR(haya_imu_msgs::msg::ImuData *p_msg) {
+void HayaImuNode::GetEulerYPR(haya_imu_msgs::msg::ImuData *p_msg) {    
     geometry_msgs::msg::Quaternion geometry_quat;
     geometry_quat.x = p_msg->orientation[0].x;
     geometry_quat.y = p_msg->orientation[0].y;

@@ -38,30 +38,50 @@
 #include "rclcpp/qos.hpp"
 #include "rmw/qos_profiles.h"
 #include "haya_imu_msgs/msg/imu_data.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 
 using std::placeholders::_1;
 
 class HayaTopicEcho : public rclcpp::Node {
 public:
     HayaTopicEcho(): Node("haya_topic_echo") {
+        std::string message_type_;
+
+        // Declare parameters, and takes default value
+        declare_parameter("message_type", "haya");
+
+        // Get parameters from config file, otherwise takes default value
+        message_type_ = get_parameter("message_type").as_string();
+
         // Create the sensor QoS profile for subscriber
         rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
         qos_profile.depth = 1;
         auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, qos_profile.depth), qos_profile);
 
-        // Create the synchronous subscriber on topic '/imu_data' and tie it to the topic_callback
-        haya_subscription_ = this->create_subscription<haya_imu_msgs::msg::ImuData>("/imu_data", qos, std::bind(&HayaTopicEcho::topic_callback, this, _1));                          
+        if(message_type_ == "haya") {// haya_imu message type
+            // Create the synchronous subscriber on topic '/imu_data' and tie it to the topic_callback
+            haya_subscription_ = this->create_subscription<haya_imu_msgs::msg::ImuData>("/imu_data", qos, std::bind(&HayaTopicEcho::topic_callback, this, _1));                          
+        }
+        else {// ros2 message type
+            // Create the synchronous subscriber on topic '/imu_data' and tie it to the topic_callback_ros2
+            ros2_subscription_ = this->create_subscription<sensor_msgs::msg::Imu>("/imu_data", qos, std::bind(&HayaTopicEcho::topic_callback_ros2, this, _1));                                  
+        }
     }
 
 private:
     // A subscriber that listens to topic '/imu_data'
     rclcpp::Subscription<haya_imu_msgs::msg::ImuData>::SharedPtr haya_subscription_;
+    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr ros2_subscription_;
 
     /**
      * Actions to run every time a new message is received
      */
     void topic_callback(const haya_imu_msgs::msg::ImuData & imu_msg) {
         RCLCPP_INFO_STREAM(get_logger(), haya_imu_msgs::msg::to_yaml(imu_msg));  
+    }
+
+    void topic_callback_ros2(const sensor_msgs::msg::Imu & imu_msg) {
+        RCLCPP_INFO_STREAM(get_logger(), sensor_msgs::msg::to_yaml(imu_msg));  
     }
 };
 

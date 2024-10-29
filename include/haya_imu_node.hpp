@@ -43,6 +43,7 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "geometry_msgs/msg/pose.hpp"
 #include "haya_imu_msgs/msg/imu_data.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 #include "lite_serial.hpp"
 
 class HayaImuNode : public lite_serial::LiteSerial, public rclcpp::Node {
@@ -75,9 +76,13 @@ class HayaImuNode : public lite_serial::LiteSerial, public rclcpp::Node {
 
 		// Haya_imu operation mode(refer to config/params.yaml)
 		int16_t imu_mode_;
-		
+
+		// Publish message type
+		std::string message_type_;
+				
 		// Imu meassage for Normal output mode and Calibration mode
         haya_imu_msgs::msg::ImuData imu_msg_;
+        sensor_msgs::msg::Imu imu_msg_ros2_;
 
 		// Haya_imu service mode enum
 		typedef enum {
@@ -133,7 +138,8 @@ class HayaImuNode : public lite_serial::LiteSerial, public rclcpp::Node {
 
 		// Topic to publish
 		rclcpp::Publisher<haya_imu_msgs::msg::ImuData>::SharedPtr publish_imu_; // Publisher including 6axis fusion quaternion & 9axis fusion quaternion
-				
+		rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publish_imu_ros2_; // Publisher including 9axis fusion quaternion
+
 		// Tf broadcaster
 		std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 

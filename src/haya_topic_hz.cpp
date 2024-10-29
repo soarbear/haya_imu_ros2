@@ -38,19 +38,34 @@
 #include "rclcpp/qos.hpp"
 #include "rmw/qos_profiles.h"
 #include "haya_imu_msgs/msg/imu_data.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 
 using std::placeholders::_1;
 
 class HayaTopicHz : public rclcpp::Node {
 public:
     HayaTopicHz(): Node("haya_topic_hz") {
+        std::string message_type_;
+
+        // Declare parameters, and takes default value
+        declare_parameter("message_type", "haya");
+
+        // Get parameters from config file, otherwise takes default value
+        message_type_ = get_parameter("message_type").as_string();
+
         // Create the sensor QoS profile for subscriber
         rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
         qos_profile.depth = 1;
         auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, qos_profile.depth), qos_profile);
 
-        // Create the synchronous subscriber on topic '/imu_data' and tie it to the topic_callback
-        haya_subscription_ = this->create_subscription<haya_imu_msgs::msg::ImuData>("/imu_data", qos, std::bind(&HayaTopicHz::topic_callback, this, _1));              
+        if(message_type_ == "haya") {// haya_imu message type
+            // Create the synchronous subscriber on topic '/imu_data' and tie it to the topic_callback
+            haya_subscription_ = this->create_subscription<haya_imu_msgs::msg::ImuData>("/imu_data", qos, std::bind(&HayaTopicHz::topic_callback, this, _1));              
+        }
+        else {// ros2 message type
+            // Create the synchronous subscriber on topic '/imu_data' and tie it to the topic_callback_ros2
+            ros2_subscription_ = this->create_subscription<sensor_msgs::msg::Imu>("/imu_data", qos, std::bind(&HayaTopicHz::topic_callback_ros2, this, _1));                         
+        }
     }
 
 private:
@@ -59,11 +74,26 @@ private:
 
     // A subscriber that listens to topic '/imu_data'
     rclcpp::Subscription<haya_imu_msgs::msg::ImuData>::SharedPtr haya_subscription_;
+    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr ros2_subscription_;
 
     /**
      * Actions to run every time a new message is received
      */
     void topic_callback(const haya_imu_msgs::msg::ImuData & imu_msg) {
+        // The following is to measure hz
+        static uint32_t count = 0;
+        static rclcpp::Time start_time;
+
+        if (++count == 1) {
+            start_time = rclcpp::Clock().now();
+        }
+        else if (count == MAX_COUNT_HZ) { // 1000 frames here
+            RCLCPP_INFO(this->get_logger(), "[Subs] hz: %5.1lf, window: %d", static_cast<uint32_t>(MAX_COUNT_HZ) / (rclcpp::Clock().now() - start_time).seconds(), count);
+            count = 0;
+        }
+    }
+
+    void topic_callback_ros2(const sensor_msgs::msg::Imu & imu_msg) {
         // The following is to measure hz
         static uint32_t count = 0;
         static rclcpp::Time start_time;
