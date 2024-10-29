@@ -6,7 +6,7 @@
 
 haya_imu_ros2は、9軸IMU/AHRS haya_imu v3の専用ROS2パッケージです。haya_imuはCortex-M4、ICM-42688、MMC5983MAを搭載しています。主なフィーチャとして、通常出力モード、デモンストレーションモード、キャリブレーションモード、6軸回転ベクトルクォータニオン、9軸回転ベクトルクォータニオン、オイラー角を同時にパブリッシュ(Max1000Hz Best Effort)することと、RVIZにてのデモンストレーションが可能となります。ROSパッケージはリポジトリhaya_imu_rosとして公開しています。
 
-[2024/10/29] お客先要望により、パブリッシュメッセージタイプは従来の[haya_imu_msgs::msg::ImuData]の他に、[sensor_msgs::msg::Imu]を新規追加済み。また、params.yamlのパラメータである、message_typeにより切り替わます。
+[2024/10/29 v3.4] お客先要望により、パブリッシュメッセージタイプは従来の[haya_imu_msgs::msg::ImuData]の他に、[sensor_msgs::msg::Imu]を新規追加済み。また、params.yamlのパラメータである、message_typeにより切り替わます。
 
 # 1. 対向環境
 
